@@ -1,0 +1,85 @@
+﻿@model EmployeeDemoApp.ViewModels.EditEmployeeViewModel
+<script src="~/lib/jquery/dist/jquery.min.js"></script>
+<h1>Edit Employee</h1>
+<hr />
+<div class="row">
+    <div class="col-md-12">
+        @using (Html.BeginForm("Details", "Employee", FormMethod.Post, new { enctype = "multipart/form-data" }))
+        {
+            @Html.AntiForgeryToken()
+      
+            <div class="form-group">
+                <label asp-for="ExistingName" class="control-label"></label>
+                <input asp-for="ExistingName" class="form-control" />
+                <span asp-validation-for="@Model.ExistingName" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="ExisitingDateOfBirth" class="control-label"></label>
+                @Html.TextBoxFor(x => x.ExisitingDateOfBirth, "{0:yyyy-MM-dd}", new { @class = "form-control", @type = "date"})
+                <span asp-validation-for="ExisitingDateOfBirth" class="text-danger"></span>
+            </div>
+
+            <div class="form-group">
+                <label asp-for="ExisitingEmail" class="control-label"></label>
+                <input asp-for="ExisitingEmail" class="form-control" />
+                <span asp-validation-for="ExisitingEmail" class="text-danger"></span>
+            </div>
+
+            <div class="form-group">
+                <label class="control-label">Department</label><br />
+                @*                @Html.DropDownListFor(m => m.ExisitingDepartment, Model.Department.ItemList, "Select Department", new { @class = "form-control" })*@
+                <select class="form-control" name="ExisitingDepartment" asp-items="Model.Department"></select>
+
+
+                @Html.ValidationMessageFor(model => model.ExisitingDepartment, "", new { @class = "text-danger" })
+
+            </div>
+
+            <div class="form-group">
+                <label class="control-label">Position</label><br />
+                @Html.ListBoxFor(m => m.ExistingPositions, Model.Position, new { @class = "form-control" })
+
+                @Html.ValidationMessageFor(model => model.ExistingPositions, "", new { @class = "text-danger" })
+
+            </div>
+            <div class="form-group">
+                <label asp-for="ExisitingAddress" class="control-label"></label>
+                <input asp-for="ExisitingAddress" class="form-control" />
+                <span asp-validation-for="ExisitingAddress" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                @Html.LabelFor(model => model.ExistingImage, htmlAttributes: new { @class = "control-label col-md-2" })
+                <div class="col-md-12">
+                      <div class="custom-file">
+                            <input asp-for="EmployeePicture" class="custom-file-input" />
+                            <label class="custom-file-label" for="customFile">Choose file</label>
+                        </div>
+                        <span asp-validation-for="EmployeePicture" class="text-danger"></span>
+                        <img src="@Model.ExistingImage" class="img-thumbnail" height="80" width="80" asp-append-version="true" />
+                </div>
+            </div>
+            <div class="form-group">
+                <label asp-for="ExisitingJoiningDate" class="control-label"></label>
+                @Html.TextBoxFor(x => x.ExisitingJoiningDate, "{0:yyyy-MM-dd}", new { @class = "form-control", @type = "date"})
+
+                <span asp-validation-for="ExisitingJoiningDate" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <button type="submit" class="btn btn-sm btn-info"><i class="fa fa-pencil-alt"></i> Update</button>
+            </div>
+        }
+    </div>
+</div>
+
+@section Scripts {
+     <script>
+        // Add the following code if you want the name of the file appear on select
+        $(".custom-file-input").on("change", function () {
+            var fileName = $(this).val().split("\\").pop();
+            $(this).siblings(".custom-file-label").addClass("selected").html(fileName);
+        });
+    </script>
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+    }

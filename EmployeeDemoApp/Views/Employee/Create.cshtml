@@ -1,0 +1,94 @@
+﻿@model EmployeeDemoApp.ViewModels.EmployeeViewModel
+<script src="~/lib/jquery/dist/jquery.min.js"></script>
+<h1>Add New Employee</h1>
+<hr />
+<div class="row">
+    <div class="col-md-12">
+        @using (Html.BeginForm("Create", "Employee", FormMethod.Post, new { enctype = "multipart/form-data" }))
+        {
+            @Html.AntiForgeryToken()
+            <div asp-validation-summary="All" class="text-danger"></div>
+            <span class="text-danger">@ViewBag.Message</span>
+
+            <div class="form-group">
+                <label asp-for="Name" class="control-label"></label>
+                <input asp-for="Name" class="form-control" />
+                <span asp-validation-for="Name" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="DateOfBirth" class="control-label"></label>
+                @Html.TextBoxFor(x => x.DateOfBirth, "{0:yyyy-MM-dd}", new { @class = "form-control", @type = "date"})
+                <span asp-validation-for="DateOfBirth" class="text-danger"></span>
+            </div>
+
+            <div class="form-group">
+                <label asp-for="Email" class="control-label"></label>
+                <input asp-for="Email" class="form-control" />
+                <span asp-validation-for="Email" class="text-danger"></span>
+            </div>
+
+            <div class="form-group">
+                <label asp-for="Password" class="control-label"></label>
+                <input asp-for="Password" class="form-control" />
+                <span asp-validation-for="Password" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label class="control-label">Confirm Password</label>
+                <input asp-for="ConfirmPassword" class="form-control" />
+                <span asp-validation-for="ConfirmPassword" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label class="control-label">Role</label><br />
+                @Html.DropDownListFor(m => m.SelectedRole, Model.Role.ItemList, "Select Role", new { @class = "form-control" })
+                @Html.ValidationMessageFor(model => model.SelectedRole,"", new { @class = "text-danger" })
+            </div>
+
+            <div class="form-group">
+                <label class="control-label">Department</label><br />
+                @Html.DropDownListFor(m => m.SelectedDepartment, Model.Department.ItemList, "Select Department", new { @class = "form-control" })
+                @Html.ValidationMessageFor(model => model.SelectedDepartment, "", new { @class = "text-danger" })
+
+            </div>
+
+            <div class="form-group">
+                <label class="control-label">Position</label><br />
+                @Html.ListBoxFor(m => m.SelectedPositions, Model.Position.ItemList, new { @class = "form-control" })
+
+                @Html.ValidationMessageFor(model => model.SelectedPositions, "", new { @class = "text-danger" })
+
+            </div>
+            <div class="form-group">
+                <label asp-for="Address" class="control-label"></label>
+                <input asp-for="Address" class="form-control" />
+                <span asp-validation-for="Address" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                @Html.LabelFor(model => model.EmployeePicture, htmlAttributes: new { @class = "control-label col-md-2" })
+                <div class="col-md-12">
+                    <input type="file"
+                       accept=".png,.jpg,.jpeg,.gif,.tif"
+                       asp-for="EmployeePicture"
+                       name="EmployeePicture"
+                       class="form-control" />
+                </div>
+
+                <span asp-validation-for="EmployeePicture" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="JoiningDate" class="control-label"></label>
+                 @Html.TextBoxFor(x => x.JoiningDate, "{0:yyyy-MM-dd}", new { @class = "form-control", @type = "date"})
+
+                <span asp-validation-for="JoiningDate" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <input type="submit" value="Create" class="btn btn-primary" />
+            </div>
+        }
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+    }
