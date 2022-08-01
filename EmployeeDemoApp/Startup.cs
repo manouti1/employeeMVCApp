@@ -62,7 +62,7 @@ namespace EmployeeDemoApp
             services.AddTransient<IRoleUtility, RoleUtility>();
 
             services.ConfigureApplicationCookie(o => o.LoginPath = "/Account/Login");
-          
+
 
         }
 
@@ -95,8 +95,11 @@ namespace EmployeeDemoApp
                     pattern: "{controller=Employee}/{action=Index}/{id?}");
                 endpoints.MapRazorPages();
             });
-        }
 
+            var folderPath = FileLocation.DeleteFileFromFolder;
+            if (!Directory.Exists(folderPath))
+                Directory.CreateDirectory(folderPath);
+        }
 
     }
 }
