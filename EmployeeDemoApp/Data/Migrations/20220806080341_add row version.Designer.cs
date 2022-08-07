@@ -4,14 +4,16 @@ using EmployeeDemoApp.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace EmployeeDemoApp.Data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20220806080341_add row version")]
+    partial class addrowversion
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -73,19 +75,19 @@ namespace EmployeeDemoApp.Data.Migrations
                     b.HasData(
                         new
                         {
-                            Id = new Guid("62bc5b7b-427a-49b0-a656-9f614c931840"),
+                            Id = new Guid("be1117af-05e5-4ec4-b598-e8bb8439f4ee"),
                             Code = "HR",
                             Name = "HR"
                         },
                         new
                         {
-                            Id = new Guid("1ac9fda4-d181-48d5-b2f6-b3a476a58da9"),
+                            Id = new Guid("ea95e931-5caa-4a21-ac6b-951e8e6af218"),
                             Code = "ADMIN",
                             Name = "Administration"
                         },
                         new
                         {
-                            Id = new Guid("39c33e8e-9369-4232-a665-aff0f4174d9c"),
+                            Id = new Guid("26d507f4-0ffb-492a-8ad4-38dc1695bff0"),
                             Code = "DEV",
                             Name = "Software Development"
                         });
@@ -149,22 +151,22 @@ namespace EmployeeDemoApp.Data.Migrations
                     b.HasData(
                         new
                         {
-                            Id = new Guid("386481dd-1a17-48e6-b1ae-fed8b5224f13"),
+                            Id = new Guid("0ccd6b42-57a5-448a-a7e6-bd0c34147b2a"),
                             Name = "HR"
                         },
                         new
                         {
-                            Id = new Guid("a99f9ae0-9efa-4fcf-b48c-dfc5d5bef9bc"),
+                            Id = new Guid("87dc05ef-0a97-4fd8-a5c9-76d80e0b83f8"),
                             Name = "Administrator"
                         },
                         new
                         {
-                            Id = new Guid("aff81119-070a-4190-9b82-9dea9daaa41e"),
+                            Id = new Guid("77c09d03-90d4-48d6-a603-ebf7a47d3a72"),
                             Name = "Web Developer"
                         },
                         new
                         {
-                            Id = new Guid("776558f7-7237-46d3-ac5f-0ccf93c729e4"),
+                            Id = new Guid("9cdd792e-fe28-4c4e-8ac2-4be3892c98a3"),
                             Name = "Manager"
                         });
                 });
@@ -238,7 +240,6 @@ namespace EmployeeDemoApp.Data.Migrations
             modelBuilder.Entity("EmployeeDemoApp.Models.UserPosition", b =>
                 {
                     b.Property<Guid>("EmployeeId")
-                        .IsConcurrencyToken()
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<Guid>("PositionId")

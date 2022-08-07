@@ -1,9 +1,11 @@
-﻿$(document).ready(function () {
-    $('#employeeGrid').DataTable({
+﻿var table = null;
+$(document).ready(function () {
+    table = $('#employeeGrid').DataTable({
         "processing": true,
         "filter": true,
         "orderMulti": false,
         "paging": false,
+        "autoWidth": true,
     });
 });
 
@@ -27,22 +29,26 @@ function DeleteData(eId) {
 
 function Delete(eId) {
     var url = "Employee/Delete?id=";
-    var obj = {};
-    obj.Id = eId;
 
     $.ajax({
-        // Since your route is "api/{controller}/{action}/{id}", 
-        // add the id to the url
         url: url + eId,
-        type: 'Post',
+        type: 'POST',
+        headers: {
+            RequestVerificationToken:
+                document.getElementById("RequestVerificationToken").value
+        },
         success: function (response) {
             Swal.fire(
                 'Deleted!',
                 'Your file has been deleted.',
                 'success'
-            );
-            oTable = $('#employeeGrid').DataTable();
-            oTable.draw();
+            ).then((result) => {
+                if (result.isConfirmed) {
+                    history.go(0);
+                }
+            });
+
+          
         }
 
     });

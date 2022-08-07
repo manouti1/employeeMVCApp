@@ -7,7 +7,7 @@
         @using (Html.BeginForm("Details", "Employee", FormMethod.Post, new { enctype = "multipart/form-data" }))
         {
             @Html.AntiForgeryToken()
-      
+
             <div class="form-group">
                 <label asp-for="ExistingName" class="control-label"></label>
                 <input asp-for="ExistingName" class="form-control" />
@@ -48,14 +48,32 @@
                 <span asp-validation-for="ExisitingAddress" class="text-danger"></span>
             </div>
             <div class="form-group">
-                @Html.LabelFor(model => model.ExistingImage, htmlAttributes: new { @class = "control-label col-md-2" })
+                <label class="control-label">Profile Picture</label>
                 <div class="col-md-12">
-                      <div class="custom-file">
-                            <input asp-for="EmployeePicture" class="custom-file-input" />
+                    <div class="form-group">
+                        <div class="col-md-10">
+                            <input asp-for="EmployeePicture" class="custom-file-input" accept="image/*" />
+
                             <label class="custom-file-label" for="customFile">Choose file</label>
                         </div>
-                        <span asp-validation-for="EmployeePicture" class="text-danger"></span>
-                        <img src="@Model.ExistingImage" class="img-thumbnail" height="80" width="80" asp-append-version="true" />
+                    </div>
+
+                    <div class="row">
+                        <div class="col-sm-12">
+                            @Html.HiddenFor(m => m.ExistingImage)
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-sm-12">
+                            @Html.LabelFor(model => model.DisplayFileName, Model.DisplayFileName,new { @class= "img-file" })
+                            @Html.HiddenFor(m => m.DisplayFileName)
+
+                        </div>
+                    </div>
+                    <br />
+                    <span asp-validation-for="DisplayFileName" class="text-danger"></span>
+
                 </div>
             </div>
             <div class="form-group">
@@ -72,11 +90,18 @@
 </div>
 
 @section Scripts {
-     <script>
+    <script>
         // Add the following code if you want the name of the file appear on select
-        $(".custom-file-input").on("change", function () {
+        function createUUID() {
+            return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+                var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
+                return v.toString(16);
+            });
+        }
+        $(".custom-file-input").on("change", function() {
             var fileName = $(this).val().split("\\").pop();
-            $(this).siblings(".custom-file-label").addClass("selected").html(fileName);
+            $(".img-file").addClass("selected").html(createUUID() + "_" + fileName);
+            $("#DisplayFileName").val(createUUID() + "_" + fileName);
         });
     </script>
     @{

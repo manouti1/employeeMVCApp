@@ -93,8 +93,8 @@ namespace EmployeeDemoApp.Repositories
                     response.Message = "Not Found";
                     return response;
                 }
-                
-                
+
+
                 //var positions = _context.Position.Select(x =>
                 //{
                 //    var userPositions = employee.UserPositions.Where(a => a.PositionId == x.Id);
@@ -114,7 +114,7 @@ namespace EmployeeDemoApp.Repositories
                         JoiningDate = employee.JoiningDate,
                         DepartmentName = employee.Department.Name,
                         PositionIds = employee.UserPositions.Select(x => x.PositionId.ToString()),
-                        Positions= employee.UserPositions.Select(x=>x.Position.Name)
+                        Positions = employee.UserPositions.Select(x => x.Position.Name)
                     },
                     Email = employee.User.Email,
                     UserName = employee.User.UserName,
@@ -134,7 +134,7 @@ namespace EmployeeDemoApp.Repositories
         public async Task<ServiceResponse<UserDataDTO>> DeleteEmployee(Guid id, UserManager<User> userManager)
         {
             ServiceResponse<UserDataDTO> response = new ServiceResponse<UserDataDTO>();
-
+            var currentImage = "";
             try
             {
                 if (id == null)
@@ -153,18 +153,61 @@ namespace EmployeeDemoApp.Repositories
                     response.Message = "Not Found";
                     return response;
                 }
-                var CurrentImage = Path.Combine(Directory.GetCurrentDirectory(), FileLocation.DeleteFileFromFolder, employee.ImageUrl);
+                currentImage = Path.Combine(Directory.GetCurrentDirectory(), FileLocation.DeleteFileFromFolder, employee.ImageUrl);
 
                 await RemoveUser(employee.User.Email, userManager);
+                _context.UserPosition.RemoveRange(employee.UserPositions);
+                _context.UserPosition.UpdateRange(employee.UserPositions);
 
                 _context.Employee.Remove(employee);
-                _context.UserPosition.RemoveRange(employee.UserPositions);
+
 
                 if (await _context.SaveChangesAsync() > 0)
                 {
-                    if (File.Exists(CurrentImage))
+                    if (File.Exists(currentImage))
                     {
-                        File.Delete(CurrentImage);
+                        File.Delete(currentImage);
+                    }
+                }
+            }
+            catch (DbUpdateConcurrencyException ex)
+            {
+                foreach (var entry in ex.Entries)
+                {
+                    if (entry.Entity is UserPosition)
+                    {
+                        var proposedValues = entry.CurrentValues;
+                        var databaseValues = entry.GetDatabaseValues();
+                        if (databaseValues != null)
+                        {
+                            foreach (var property in proposedValues.Properties)
+                            {
+                                var proposedValue = proposedValues[property];
+                                var databaseValue = databaseValues[property];
+
+                                // TODO: decide which value should be written to database
+                                proposedValues[property] = databaseValue;
+                            }
+                            // Refresh original values to bypass next concurrency check
+                            entry.OriginalValues.SetValues(databaseValues);
+                        }
+                        else
+                        {
+                            if (File.Exists(currentImage))
+                            {
+                                File.Delete(currentImage);
+                            }
+
+                            response.Success = true;
+                            return response;
+                        }
+                      
+                    }
+                    else
+                    {
+                        throw new NotSupportedException(
+                            "Don't know how to handle concurrency conflicts for "
+                            + entry.Metadata.Name);
                     }
                 }
             }
@@ -210,6 +253,9 @@ namespace EmployeeDemoApp.Repositories
                             new UserPosition(emp.Id,Guid.Parse(item))
                         };
                     }
+
+                    _context.UserPosition.UpdateRange(emp.UserPositions);
+
                     _context.Update(emp);
                     await _context.SaveChangesAsync();
                 }

@@ -53,6 +53,7 @@ namespace EmployeeDemoApp.Data
                 entity.ToTable("UserToken");
             });
 
+
             builder.Entity<UserPosition>().HasKey(sc => new { sc.EmployeeId, sc.PositionId });
 
             builder.Entity<UserPosition>()
@@ -70,9 +71,13 @@ namespace EmployeeDemoApp.Data
                 .OnDelete(DeleteBehavior.Cascade)
                 .IsRequired();
 
+            builder.Entity<UserPosition>()
+             .Property(c => c.RowVersion)
+             .IsRowVersion();
 
             builder.Entity<Department>()
              .HasIndex(d => d.Code).IsUnique();
+
             builder.Entity<Department>()
               .Property(p => p.Code)
               .HasMaxLength(5)

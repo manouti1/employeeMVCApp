@@ -4,6 +4,7 @@ using EmployeeDemoApp.Models;
 using EmployeeDemoApp.ViewModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -53,7 +54,7 @@ namespace EmployeeDemoApp.Controllers
                 Email = x.Email,
                 DateOfBirth = x.EmployeeInfo.DateOfBirth,
                 JoiningDate = x.EmployeeInfo.JoiningDate,
-                ProfilePic = FileLocation.RetriveFileFromFolder + x.EmployeeInfo.ProfilePic,
+                ProfilePic = Path.Combine(Path.Combine(_env.WebRootPath, FileLocation.FileUploadFolder), x.EmployeeInfo.ProfilePic),
                 SelectedDepartment = x.EmployeeInfo.DepartmentName
 
             });
@@ -78,7 +79,14 @@ namespace EmployeeDemoApp.Controllers
             }
 
             var user = await _unitOfWork.Employees.FindById(id);
+
+            if (user == null)
+            {
+                return NotFound();
+            }
             var employeeDetails = user.Data.EmployeeInfo;
+            var existingImage = Path.Combine(Path.Combine(_env.WebRootPath, FileLocation.FileUploadFolder), employeeDetails.ProfilePic);
+
             var employeeViewModel = new EditEmployeeViewModel()
             {
                 ExistingName = employeeDetails.Name,
@@ -89,15 +97,12 @@ namespace EmployeeDemoApp.Controllers
                 ExisitingEmail = user.Data.Email,
                 ExisitingUserName = user.Data.Email,
                 ExisitingDateOfBirth = employeeDetails.DateOfBirth,
-                ExistingImage = Path.Combine(Path.Combine(_env.WebRootPath, FileLocation.FileUploadFolder), employeeDetails.ProfilePic),
+                ExistingImage = existingImage,
+                DisplayFileName = employeeDetails.ProfilePic
             };
 
             await FillFormData(null, employeeViewModel);
 
-            if (user == null)
-            {
-                return NotFound();
-            }
             if (employeeViewModel != null)
                 return View(employeeViewModel);
             else
@@ -118,8 +123,7 @@ namespace EmployeeDemoApp.Controllers
                 {
                     if (model.ExistingImage != null)
                     {
-                        string filePath = Path.Combine(_env.WebRootPath, FileLocation.FileUploadFolder, model.ExistingImage);
-                        System.IO.File.Delete(filePath);
+                        System.IO.File.Delete(model.ExistingImage);
                     }
                 }
 
@@ -138,47 +142,26 @@ namespace EmployeeDemoApp.Controllers
                         DepartmentId = Guid.Parse(model.ExisitingDepartment),
                         JoiningDate = model.ExisitingJoiningDate,
                         Name = model.ExistingName,
-                        ProfilePic = model.ExistingImage,
+                        ProfilePic = model.DisplayFileName,
                         Positions = model.ExistingPositions
                     }
                 });
+                var uploadsFolder = Path.Combine(_env.WebRootPath, FileLocation.FileUploadFolder);
 
+                var filePath = Path.Combine(uploadsFolder, model.DisplayFileName);
+
+                CopyFileToPhyscialDrive(filePath, model.EmployeePicture);
 
 
                 return RedirectToAction(nameof(Index));
             }
             return View(model);
         }
-        //[Authorize(Roles = "Admin,HR")]
-        //public async Task<IActionResult> Delete(Guid id)
-        //{
-        //    if (id == null)
-        //    {
-        //        return NotFound();
-        //    }
-
-        //    var employee = await _unitOfWork.Employees.FindById(id);
-        //    var employeeData = employee.Data.EmployeeInfo;
-        //    var employeeViewModel = new EmployeeViewModel()
-        //    {
-        //        Id = employeeData.Id,
-        //        Address = employeeData.Address,
-        //        Name = employeeData.Name,
-        //        //        DepartmentId = employeeData.DepartmentId.ToString(),
-        //        ExistingImage = employeeData.ProfilePic
-        //    };
-        //    if (employee == null)
-        //    {
-        //        return NotFound();
-        //    }
-
-        //    return View(employeeViewModel);
-        //}
 
         [HttpPost]
         [ValidateAntiForgeryToken]
         [Authorize(Roles = "Admin,HR")]
-        public async Task<IActionResult> Delete([FromQuery]string id)
+        public async Task<IActionResult> Delete([FromQuery] string id)
         {
             if (id == null)
             {
@@ -210,7 +193,9 @@ namespace EmployeeDemoApp.Controllers
             if (ModelState.IsValid)
             {
                 var empID = Guid.NewGuid();
-                var fileName = ProcessUploadedFile(model.EmployeePicture.FileName).Item3;
+                var processedFile = ProcessUploadedFile(model.EmployeePicture.FileName);
+                var fileName = processedFile.Item3;
+                var filePath = processedFile.Item2;
                 var role = model.Role.ItemList.Find(x => x.Value == model.SelectedRole).Text;
                 var result = await _unitOfWork.Employees.CreateEmployee(_userManager, _roleManager, new DTO.UserDataDTO
                 {
@@ -240,7 +225,7 @@ namespace EmployeeDemoApp.Controllers
                 }
                 else
                 {
-                    CopyFileToPhyscialDrive(fileName, model);
+                    CopyFileToPhyscialDrive(filePath, model.EmployeePicture);
                 }
                 return RedirectToAction(nameof(Index));
             }
@@ -270,11 +255,11 @@ namespace EmployeeDemoApp.Controllers
             return Tuple.Create(uploadsFolder, filePath, uniqueFileName);
         }
 
-        private void CopyFileToPhyscialDrive(string filePath, EmployeeViewModel model)
+        private void CopyFileToPhyscialDrive(string filePath, IFormFile employeePicture)
         {
             using (var fileStream = new FileStream(filePath, FileMode.Create))
             {
-                model.EmployeePicture.CopyTo(fileStream);
+                employeePicture.CopyTo(fileStream);
             }
         }
         private async Task FillFormData(EmployeeViewModel empModel = null, EditEmployeeViewModel editModel = null)
